@@ -1,48 +1,46 @@
 import json
 import os
-from flask import Flask, jsonify, request
+from flask import Flask, jsonify, render_template, request
 
 app = Flask(__name__)
 DB_FILE = "cloud_memory.json"
 
 
 def load_db():
-    if os.path.exists(DB_FILE):
-        with open(DB_FILE, "r", encoding="utf-8") as f:
-            try:
-                return json.load(f)
-            except:
-                return {}
-    return {}
+  if os.path.exists(DB_FILE):
+    with open(DB_FILE, "r", encoding="utf-8") as f:
+      try:
+        return json.load(f)
+      except:
+        return {}
+  return {}
 
 
 def save_db(data):
-    with open(DB_FILE, "w", encoding="utf-8") as f:
-        json.dump(data, f, indent=4, ensure_ascii=False)
+  with open(DB_FILE, "w", encoding="utf-8") as f:
+    json.dump(data, f, indent=4, ensure_ascii=False)
 
 
+# Rute Utama: Menampilkan GUI Dashboard (render file index.html di folder templates)
 @app.route("/", methods=["GET"])
 def home():
-    return jsonify({
-        "message": "Selamat datang di Omnia Memory API!",
-        "endpoint_memory": "/memory"
-    }), 200
+  return render_template("index.html")
 
 
 @app.route("/memory", methods=["GET"])
 def get_memory():
-    return jsonify(load_db()), 200
+  return jsonify(load_db()), 200
 
 
 @app.route("/memory", methods=["POST"])
 def update_memory():
-    new_data = request.json
-    if not isinstance(new_data, dict):
-        return jsonify({"error": "Harus format JSON"}), 400
-    save_db(new_data)
-    return jsonify({"status": "success"}), 200
+  new_data = request.json
+  if not isinstance(new_data, dict):
+    return jsonify({"error": "Harus format JSON"}), 400
+  save_db(new_data)
+  return jsonify({"status": "success"}), 200
 
 
 if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port)
+  port = int(os.environ.get("PORT", 5000))
+  app.run(host="0.0.0.0", port=port)
